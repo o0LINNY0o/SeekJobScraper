@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common import NoSuchElementException
@@ -12,7 +13,7 @@ import time
 def configure_webdriver():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
-    options.add_argument("start-maximized")
+    #options.add_argument("start-maximized")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
@@ -68,12 +69,16 @@ def scrape_job_data(driver, country, job_position, total_jobs):
 
                 # Scrape job description and salary information from the job page
                 driver.get(link_full)
-                time.sleep(1)  # Add a second delay
+                time.sleep(2)  # Add a second delay
 
                 soup_job_page = BeautifulSoup(driver.page_source, 'lxml')
                 
                 job_description_element = soup_job_page.find('div', {'data-automation': 'jobAdDetails'})
-                job_description_text = job_description_element.get_text(strip=True) if job_description_element else "Unknown"
+                if job_description_element:
+                    job_description_text = job_description_element.get_text(strip=True)
+                    job_description_text = re.sub(r'\s+', ' ', job_description_text)
+                else:
+                    job_description_text = "Unknown"
 
                 salary_element = soup_job_page.find('span', {'data-automation':'job-detail-salary'})
                 salary_text = 'Unknown'
@@ -96,7 +101,7 @@ def scrape_job_data(driver, country, job_position, total_jobs):
 
         print(f"Scraped {job_count} of {total_jobs}")
 
-        next_page = soup.find('a', {'aria-label': 'Next Page'})
+        next_page = soup.find('a', {'aria-label': 'Next'})
         if next_page:
             next_page_url = country + next_page.get('href')
             driver.get(next_page_url)
