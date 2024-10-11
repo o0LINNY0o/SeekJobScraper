@@ -62,7 +62,7 @@ def main():
                 current_date = datetime.now().strftime("%Y-%m-%d")
                 
                 # Create filename with date
-                filename = f"{job_position}_{job_location}_{current_date}.csv"
+                filename = f"seek_{job_position}_{job_location}_{current_date}.csv"
                 
                 # Full path for the CSV file
                 csv_file = os.path.join(csv_dir, filename)
