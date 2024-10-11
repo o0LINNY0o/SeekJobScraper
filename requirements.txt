@@ -1,0 +1,7 @@
+beautifulsoup4==4.12.2
+lxml==4.9.3
+pandas==2.0.3
+python-dotenv==1.0.0
+selenium==4.10.0
+selenium-stealth==1.0.6
+webdriver-manager==3.8.6
