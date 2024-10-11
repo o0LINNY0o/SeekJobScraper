@@ -11,7 +11,7 @@ Before using the script, make sure you have the following installed:
 
 ## Files:
 1. Main.py
-2. job_scraper_utils.py
+2. seek_scraper_utils.py
 
 ## Dependencies:
 - Python 3.7+
