@@ -13,7 +13,7 @@ import time
 def configure_webdriver():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
-    #options.add_argument("start-maximized")
+    options.add_argument('--log-level=1')
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
@@ -47,7 +47,6 @@ def scrape_job_data(driver, country, job_position, total_jobs):
 
     while True:
         soup = BeautifulSoup(driver.page_source, 'lxml')
-        #boxes = soup.find_all('article', {'data-automation': 'normalJob'})
         boxes = soup.find_all('article', {'data-automation': ['normalJob', 'premiumJob']})
               
         for box in boxes:
@@ -69,8 +68,7 @@ def scrape_job_data(driver, country, job_position, total_jobs):
 
                 # Scrape job description and salary information from the job page
                 driver.get(link_full)
-                time.sleep(2)  # Add a second delay
-
+                
                 soup_job_page = BeautifulSoup(driver.page_source, 'lxml')
                 
                 job_description_element = soup_job_page.find('div', {'data-automation': 'jobAdDetails'})
@@ -117,8 +115,8 @@ def clean_data(df):
         x = x.replace('PostedToday', '0').strip()
         x = x.replace('PostedJust posted', '0').strip()
         x = x.replace('today', '0').strip()
-        x = x.replace('days ago', '').strip()
-        x = x.replace('day ago', '').strip()
+        x = x.replace('d ago', '').strip()
+        x = re.sub(r'\b\d+(?:\s*h)?\s*ago\b', '0', x, flags=re.IGNORECASE).strip()
         x = x.replace('+', '').strip()
         return x
 
