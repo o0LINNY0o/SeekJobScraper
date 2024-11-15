@@ -8,7 +8,6 @@ from selenium.webdriver.common.by import By
 from selenium_stealth import stealth
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
-import time
 
 def configure_webdriver():
     options = webdriver.ChromeOptions()
@@ -42,7 +41,7 @@ def search_jobs(driver, country, job_position, job_location, date_posted):
     return job_position, total_jobs
 
 def scrape_job_data(driver, country, job_position, total_jobs):
-    df = pd.DataFrame(columns=['Link', 'Job Title', 'Company', 'Date Posted', 'Location', 'Job Description', 'Salary', 'Search Query'])
+    df = pd.DataFrame(columns=['Link', 'Job Title', 'Company', 'Location', 'Job Description', 'Salary', 'Search Query'])
     job_count = 0
 
     while True:
@@ -57,11 +56,6 @@ def scrape_job_data(driver, country, job_position, total_jobs):
                                 
                 company_tag = box.find('a', {'data-automation':'jobCompany'})
                 company = company_tag.text if company_tag else None
-                
-                try:
-                    date_posted = box.find('span',{"data-automation":"jobListingDate"}).text
-                except AttributeError as e:
-                    date_posted = box.find('span',{"data-automation":"jobListingDate"}).text.strip()
 
                 location_element = box.find('a', {'data-automation':'jobLocation'})
                 location = location_element.find('span').text if location_element and location_element.find('span') else location_element.text if location_element else ''
@@ -85,9 +79,12 @@ def scrape_job_data(driver, country, job_position, total_jobs):
                     salary_text = ' '.join([span.get_text(strip=True) for span in spans]) if spans else salary_element.text.strip()
 
                 new_data = pd.DataFrame({
-                    'Link': [link_full], 'Job Title': [job_title], 'Company': [company],
-                    'Date Posted': [date_posted], 'Location': [location],
-                    'Job Description': [job_description_text], 'Salary': [salary_text],
+                    'Link': [link_full], 
+                    'Job Title': [job_title], 
+                    'Company': [company],
+                    'Location': [location],
+                    'Job Description': [job_description_text], 
+                    'Salary': [salary_text],
                     'Search Query': [job_position]
                 })
 
@@ -108,30 +105,5 @@ def scrape_job_data(driver, country, job_position, total_jobs):
 
     return df
 
-def clean_data(df):
-    def clean_posted(x):
-        x = x.replace('PostedPosted', '').strip()
-        x = x.replace('EmployerActive', '').strip()
-        x = x.replace('PostedToday', '0').strip()
-        x = x.replace('PostedJust posted', '0').strip()
-        x = x.replace('today', '0').strip()
-        x = x.replace('d ago', '').strip()
-        x = re.sub(r'\b\d+(?:\s*h)?\s*ago\b', '0', x, flags=re.IGNORECASE).strip()
-        x = x.replace('+', '').strip()
-        return x
-
-    df['Date Posted'] = df['Date Posted'].apply(clean_posted)
-    return df
-
 def sort_data(df):
-    def convert_to_integer(x):
-        try:
-            return int(x)
-        except ValueError:
-            return float('inf')
-
-    df['Date_num'] = df['Date Posted'].apply(lambda x: x[:2].strip())
-    df['Date_num2'] = df['Date_num'].apply(convert_to_integer)
-    df.sort_values(by=['Date_num2'], inplace=True)
-    df = df[['Link', 'Job Title', 'Company', 'Date Posted', 'Location', 'Job Description', 'Salary', 'Search Query']]
-    return df
+    return df[['Link', 'Job Title', 'Company', 'Location', 'Job Description', 'Salary', 'Search Query']]
