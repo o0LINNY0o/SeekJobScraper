@@ -53,8 +53,7 @@ def main():
             # You might want to send an email here with the subject and body
             
         else:
-            cleaned_df = clean_data(df)
-            sorted_df = sort_data(cleaned_df)
+            sorted_df = sort_data(df)
             
             # Check if there are any jobs before saving the CSV
             if not sorted_df.empty:
@@ -62,7 +61,7 @@ def main():
                 current_date = datetime.now().strftime("%Y-%m-%d")
                 
                 # Create filename with date
-                filename = f"seek_{job_position}_{job_location}_{current_date}.csv"
+                filename = f"Seek_{job_position}_{job_location}_{current_date}.csv"
                 
                 # Full path for the CSV file
                 csv_file = os.path.join(csv_dir, filename)
